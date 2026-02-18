@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"> <!-- 預設為深色模式 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITBM-EMI - Executive Course Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        bcg: {
+                            green: '#177a46',
+                            dark: '#1e1e1e',
+                            light: '#f3f4f6',
+                            textDark: '#e5e7eb',
+                            textLight: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'Noto Sans TC', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        body, header, footer, div, span, p, h1, h2, h3, button, nav, a, li, ul, label, section, main {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .playing-indicator span {
+            display: inline-block; width: 3px; height: 10px; background-color: currentColor; margin: 0 1px; animation: wave 1s infinite ease-in-out;
+        }
+        .playing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .playing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 16px; } }
+
+        .tbd-card {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(100,100,100,0.05) 10px, rgba(100,100,100,0.05) 20px);
+        }
+        .dark .tbd-card {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px);
+        }
+
+        /* Tech-style checkbox */
+        .tech-check:checked + div {
+            border-color: #177a46;
+            background-color: rgba(23, 122, 70, 0.05);
+        }
+        .tech-check:checked + div p {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-white dark:bg-bcg-dark text-gray-900 dark:text-bcg-textDark font-sans transition-colors duration-300">
+
+    <!-- HEADER -->
+    <header class="fixed w-full top-0 z-50 h-14 flex items-center justify-between px-3 md:px-6 bg-white dark:bg-black/95 shadow-md border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+        
+        <div class="flex items-center h-full">
+            <button id="menu-btn" class="text-gray-700 dark:text-gray-300 hover:text-bcg-green focus:outline-none transition p-2 mr-2">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+            
+            <div onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="cursor-pointer mr-4 border-r border-gray-300 dark:border-gray-700 pr-4 h-8 flex items-center">
+                <span class="font-bold text-xl tracking-wider text-bcg-green leading-none uppercase">ITBM</span>
+            </div>
+
+            <div class="hidden lg:flex flex-col justify-center h-full py-1">
+                <div class="text-[10px] text-gray-600 dark:text-gray-400 font-medium leading-none mb-0.5 uppercase tracking-tighter">
+                    <span class="lang-en">Industry Trends and Business Models</span>
+                    <span class="lang-zh hidden">新興產業趨勢與商業模式-全英授課</span>
+                </div>
+                <div class="text-[9px] text-gray-500 dark:text-gray-500 leading-tight uppercase">
+                    <span class="lang-en">Executive Course Hub (EMI)</span>
+                    <span class="lang-zh hidden">課程資訊中心 (EMI)</span>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="absolute left-1/2 transform -translate-x-1/2 text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 tracking-wide text-center uppercase whitespace-nowrap">
+            <span class="lang-en">NOTIFICATION</span>
+            <span class="lang-zh hidden">課程通知</span>
+        </h1>
+
+        <div class="flex items-center space-x-2">
+            <!-- Audio button removed -->
+            <button id="theme-toggle" class="w-7 h-7 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-yellow-500 hover:bg-gray-100 dark:hover:bg-white/10 transition">
+                <i class="fas fa-sun text-sm"></i>
+            </button>
+            <button id="lang-toggle" class="text-[10px] font-bold border border-gray-400 dark:border-gray-600 text-gray-800 dark:text-gray-300 rounded px-1.5 py-0.5 hover:border-bcg-green hover:text-bcg-green transition whitespace-nowrap bg-transparent uppercase">
+                ENG / 繁中
+            </button>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <div id="overlay" class="fixed inset-0 bg-black/50 z-40 hidden backdrop-blur-sm transition-opacity"></div>
+    <div id="sidebar" class="fixed top-0 left-0 w-fit min-w-[200px] max-w-[85vw] h-full bg-white dark:bg-bcg-dark border-r border-gray-200 dark:border-gray-700 z-50 transform -translate-x-full shadow-2xl flex flex-col">
+        <div onclick="toggleSidebar()" class="h-14 flex items-center justify-between px-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-black/20 cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 transition group">
+            <span class="font-bold text-lg text-gray-800 dark:text-white tracking-widest group-hover:text-bcg-green transition">NAVIGATOR</span>
+            <i class="fas fa-chevron-left text-gray-400 group-hover:text-bcg-green transition text-sm"></i>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto no-scrollbar py-4 space-y-1">
+            <a href="#" onclick="switchSection('overview')" id="nav-overview" class="block px-6 py-4 border-l-4 border-bcg-green bg-gray-100 dark:bg-white/5 text-bcg-green dark:text-white whitespace-nowrap">
+                <div class="flex items-center">
+                    <span class="w-6 text-center mr-3"><i class="fas fa-book-open"></i></span>
+                    <span class="lang-en">Course Brief</span><span class="lang-zh hidden">課程簡介</span>
+                </div>
+            </a>
+            <a href="#" onclick="switchSection('w1-orientation')" id="nav-w1-orientation" class="block px-6 py-4 border-l-4 border-transparent text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition whitespace-nowrap">
+                <div class="flex items-center">
+                    <span class="w-6 text-center mr-3"><i class="fas fa-compass"></i></span>
+                    <span class="lang-en">W1 Orientation</span><span class="lang-zh hidden">第一週課程定位</span>
+                </div>
+            </a>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 pt-20 pb-20 px-4 max-w-4xl mx-auto w-full">
+        
+        <!-- SECTION: OVERVIEW -->
+        <div id="section-overview" class="animate-fade-in">
+            <div class="bg-bcg-green text-white p-8 rounded-lg mb-8 shadow-xl">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-xs font-bold uppercase tracking-widest opacity-80">Spring 2026 | ITBM-EMI</span>
+                    <span class="bg-white/20 px-2 py-1 rounded text-[10px] font-mono">Ver: 2025-11-11</span>
+                </div>
+                <h2 class="text-3xl font-bold mb-2">Industry Trends and Business Models</h2>
+                <p class="text-lg opacity-90 italic">"Become a competent Product Manager in MNCS"</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/20 text-sm">
+                    <div>
+                        <p class="opacity-70 text-[10px] uppercase font-bold"><span class="lang-en">Class Time</span><span class="lang-zh hidden">上課時間</span></p>
+                        <p class="font-medium">Wed 3bcd (9:10~12:00)</p>
+                    </div>
+                    <div>
+                        <p class="opacity-70 text-[10px] uppercase font-bold"><span class="lang-en">Location</span><span class="lang-zh hidden">教室</span></p>
+                        <p class="font-medium">MGMT B15</p>
+                    </div>
+                    <div>
+                        <p class="opacity-70 text-[10px] uppercase font-bold"><span class="lang-en">Instructor</span><span class="lang-zh hidden">授課教授</span></p>
+                        <p class="font-medium"><span class="lang-en">Prof. Shihmin Lo</span><span class="lang-zh hidden">駱世民教授</span></p>
+                    </div>
+                    <div>
+                        <p class="opacity-70 text-[10px] uppercase font-bold"><span class="lang-en">Credits</span><span class="lang-zh hidden">學分數</span></p>
+                        <p class="font-medium">3 Units</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <div class="border-l-4 border-bcg-green pl-6">
+                    <h3 class="text-xl font-bold mb-4 uppercase tracking-wider text-bcg-green">
+                        <span class="lang-en">I. Course Brief</span><span class="lang-zh hidden">一、課程簡介</span>
+                    </h3>
+                    <p class="text-sm text-gray-700 dark:text-gray-400 leading-relaxed mb-4">
+                        <span class="lang-en">The dual forces of technology-push and demand-pull are the key drivers behind the emergence of new industries and business models. This course emphasizes the appropriate use of <strong>Generative AI tools</strong> through IRF, TPS, and BITs frameworks to support self-learning and group projects.</span>
+                        <span class="lang-zh hidden">技術推力 (Technology-push) 與需求拉力 (Demand-pull) 是推動新興產業與商業模式出現的核心動力。本課程強調透過 IRF、TPS 與 BITs 框架正確使用<strong>生成式 AI 工具</strong>，以支援自主學習與小組專案。</span>
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="bg-gray-100 dark:bg-white/10 px-2 py-1 rounded text-[10px] font-bold">PBL/PjBL</span>
+                        <span class="bg-gray-100 dark:bg-white/10 px-2 py-1 rounded text-[10px] font-bold">SDL</span>
+                        <span class="bg-gray-100 dark:bg-white/10 px-2 py-1 rounded text-[10px] font-bold">Team Collaborative</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-6 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition cursor-pointer">
+                        <h4 class="font-bold mb-3 flex items-center"><i class="fas fa-book mr-2 text-bcg-green"></i> <span class="lang-en">Materials</span><span class="lang-zh hidden">課程教材</span></h4>
+                        <ul class="text-xs space-y-2 text-gray-600 dark:text-gray-400">
+                            <li>• <strong>Strategic Management:</strong> Ch9 [Lo et al.]</li>
+                            <li>• <strong>ewant Platform:</strong> ITBM Digital Course</li>
+                            <li>• <strong>YouTube:</strong> Prof. Lo's ITBM Playlist</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-6 rounded-lg hover:bg-gray-50 dark:hover:bg-white/10 transition cursor-pointer">
+                        <h4 class="font-bold mb-3 flex items-center"><i class="fas fa-tools mr-2 text-bcg-green"></i> <span class="lang-en">AI Toolkit</span><span class="lang-zh hidden">AI 工具箱</span></h4>
+                        <p class="text-[10px] text-gray-500 leading-tight">
+                            ChatGPT, Canvas, NotebookLM, Perplexity, SciSpace, D-ID, ElevenLabs, Gamma, Mentimeter, etc.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: W1 ORIENTATION -->
+        <div id="section-w1-orientation" class="hidden animate-fade-in">
+            <div class="mb-6 border-b border-gray-200 dark:border-gray-800 pb-4">
+                <h2 class="text-2xl font-light text-bcg-green uppercase tracking-wider">
+                    <span class="lang-en">W1 Orientation</span><span class="lang-zh hidden">第一週 課程定位</span>
+                </h2>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="flex space-x-1 bg-gray-100 dark:bg-white/5 p-1 rounded-lg mb-8 max-w-sm">
+                <button onclick="switchTab('pre-w1')" id="tab-pre-w1" class="flex-1 py-2 text-xs font-bold rounded-md transition-all bg-bcg-green text-white shadow-sm">
+                    Pre W1
+                </button>
+                <button onclick="switchTab('post-w1')" id="tab-post-w1" class="flex-1 py-2 text-xs font-bold rounded-md transition-all text-gray-500 hover:text-gray-700 dark:hover:text-white">
+                    Post W1
+                </button>
+            </div>
+
+            <!-- Pre W1 Content -->
+            <div id="content-pre-w1" class="space-y-6">
+
+                <!-- Module: Critical Alerts & Expectations -->
+                <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-xl p-6 shadow-sm overflow-hidden relative">
+                    <div class="absolute -top-4 -right-4 opacity-10 rotate-12">
+                        <i class="fas fa-shield-alt text-8xl text-red-600"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="flex items-center mb-6">
+                            <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white mr-4 shadow-lg shadow-red-500/30">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-red-700 dark:text-red-400 uppercase tracking-tighter leading-none mb-1">Critical Alerts & Expectations</h3>
+                                <p class="text-[10px] text-red-500 dark:text-red-500/70 font-mono uppercase tracking-widest">Mandatory Requirements Phase</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Rule 1 -->
+                            <div class="p-4 bg-white/60 dark:bg-black/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                                <div class="flex items-center mb-2">
+                                    <span class="w-5 h-5 rounded bg-red-600 text-white flex items-center justify-center text-[10px] font-bold mr-2">01</span>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">English Proficiency B1+ Required</h4>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    <span class="lang-en">This is an EMI course. Weekly oral presentations and group discussions in English are <strong>mandatory</strong>. You must speak up every week.</span>
+                                    <span class="lang-zh hidden">本課程為全英授課 (EMI)。每週的英語口頭發表與小組討論為<strong>強制性</strong>要求，每位同學每週皆須發言。</span>
+                                </p>
+                            </div>
+
+                            <!-- Rule 2 -->
+                            <div class="p-4 bg-white/60 dark:bg-black/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                                <div class="flex items-center mb-2">
+                                    <span class="w-5 h-5 rounded bg-red-600 text-white flex items-center justify-center text-[10px] font-bold mr-2">02</span>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">High Workload & Attendance</h4>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    <span class="lang-en">Groups will be formed in Week 1. If you must be absent on 2/25, please submit a leave request on Moodle in advance.</span>
+                                    <span class="lang-zh hidden">第一週將進行分組。若您於 2/25 必須缺席，請務必事先於 Moodle 提交請假申請。</span>
+                                </p>
+                            </div>
+
+                            <!-- Rule 3 -->
+                            <div class="p-4 bg-white/60 dark:bg-black/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                                <div class="flex items-center mb-2">
+                                    <span class="w-5 h-5 rounded bg-red-600 text-white flex items-center justify-center text-[10px] font-bold mr-2">03</span>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">Bring Your Device</h4>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    <span class="lang-en">Please bring a <strong>laptop or tablet</strong> every week for GenAI practice.</span>
+                                    <span class="lang-zh hidden">每週課程皆含生成式 AI 實作，請務必攜帶<strong>筆記型電腦或平板電腦</strong>上課。</span>
+                                </p>
+                            </div>
+
+                            <!-- Rule 4 -->
+                            <div class="p-4 bg-white/60 dark:bg-black/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                                <div class="flex items-center mb-2">
+                                    <span class="w-5 h-5 rounded bg-red-600 text-white flex items-center justify-center text-[10px] font-bold mr-2">04</span>
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">Drop Policy</h4>
+                                </div>
+                                <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    <span class="lang-en">If you feel unprepared or overwhelmed, please drop the course early to allow waitlisted students to join.</span>
+                                    <span class="lang-zh hidden">若您感到準備不足或壓力過大，請儘早退選課程，以便讓候補名單中的同學加入。</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech-Style Checklist Container -->
+                <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-xl backdrop-blur-md relative overflow-hidden">
+                    
+                    <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                        <i class="fas fa-microchip text-8xl"></i>
+                    </div>
+
+                    <!-- Header & Progress -->
+                    <div class="flex justify-between items-end mb-4">
+                        <div class="flex flex-col">
+                            <h3 class="text-sm font-bold uppercase tracking-[0.2em] text-bcg-green">Mission Status Checklist</h3>
+                            <span class="text-[10px] text-gray-500 uppercase font-mono">Initialization Phase</span>
+                        </div>
+                        <span id="progress-percent" class="text-lg font-bold font-mono text-bcg-green">0%</span>
+                    </div>
+
+                    <!-- Tech Progress Bar -->
+                    <div class="w-full h-1.5 bg-gray-200 dark:bg-white/10 rounded-full mb-8 overflow-hidden">
+                        <div id="mission-progress" class="h-full bg-bcg-green transition-all duration-700 ease-out shadow-[0_0_15px_rgba(23,122,70,0.6)]" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Checklist Items -->
+                    <div class="space-y-4" id="checklist-container">
+                        
+                        <!-- Task 1 -->
+                        <label class="relative block cursor-pointer group">
+                            <input type="checkbox" class="tech-check hidden peer">
+                            <div class="flex items-center p-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-lg group-hover:border-bcg-green/40 transition-all duration-300">
+                                <div class="w-8 h-8 rounded-md bg-white dark:bg-white/10 flex items-center justify-center text-gray-400 group-hover:text-bcg-green transition peer-checked:bg-bcg-green peer-checked:text-white shrink-0">
+                                    <i class="fas fa-check text-xs"></i>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-bcg-green transition">1. Fulfill personal form</p>
+                                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-bcg-green/10 text-bcg-green font-bold uppercase tracking-tighter border border-bcg-green/20">Required</span>
+                                    </div>
+                                    <div class="mt-2 flex flex-col space-y-1.5">
+                                        <div>
+                                            <a href="https://forms.gle/SL5KpnzwuyvW9bp69" target="_blank" class="inline-flex items-center px-3 py-1 bg-bcg-green text-white text-[10px] font-bold rounded hover:bg-green-700 transition-all shadow-lg shadow-bcg-green/20">
+                                                <i class="fas fa-link mr-1.5"></i> Open Form Link
+                                            </a>
+                                        </div>
+                                        <p class="text-[11px] font-bold text-red-600 dark:text-red-400 italic">
+                                            <span class="lang-en">Must be completed by 2/24 23:59</span>
+                                            <span class="lang-zh hidden">須於 2/24 23:59 前完成</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+
+                        <!-- Task 2 -->
+                        <label class="relative block cursor-pointer group">
+                            <input type="checkbox" class="tech-check hidden peer">
+                            <div class="flex items-center p-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-lg group-hover:border-bcg-green/40 transition-all duration-300">
+                                <div class="w-8 h-8 rounded-md bg-white dark:bg-white/10 flex items-center justify-center text-gray-400 group-hover:text-bcg-green transition peer-checked:bg-bcg-green peer-checked:text-white shrink-0">
+                                    <i class="fas fa-check text-xs"></i>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-bcg-green transition">2. Read Syllabus & Bio</p>
+                                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-bold uppercase tracking-tighter border border-blue-500/20">Review</span>
+                                    </div>
+                                    <p class="text-[11px] font-bold text-bcg-green dark:text-bcg-green mt-1">
+                                        <span class="lang-en">SYLLABUS AND BIO ON MOODLE</span>
+                                        <span class="lang-zh hidden">大綱與簡歷已上傳至 MOODLE</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Hint -->
+                    <div class="mt-6 flex items-center text-[10px] text-gray-500 font-mono uppercase tracking-widest">
+                        <i class="fas fa-info-circle mr-2 text-bcg-green animate-pulse"></i>
+                        Complete all items to unlock module access
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post W1 Content -->
+            <div id="content-post-w1" class="hidden space-y-6">
+                <div class="tbd-card border border-dashed border-gray-300 dark:border-gray-700 h-64 rounded-xl flex flex-col items-center justify-center p-8 text-center">
+                    <div class="w-16 h-16 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-lock text-gray-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-gray-500 dark:text-gray-400 font-bold mb-2">
+                        <span class="lang-en">Post-Class Resources</span><span class="lang-zh hidden">課後資源</span>
+                    </h3>
+                    <p class="text-xs text-gray-400 max-w-xs">
+                        <span class="lang-en">Materials will be unlocked following the conclusion of the first session.</span>
+                        <span class="lang-zh hidden">本模組內容將於第一週課程結束後開放下載。</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="fixed bottom-0 w-full h-14 bg-white dark:bg-black/95 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 md:px-6 z-50 text-xs">
+        <div class="flex flex-col">
+            <span class="text-[9px] text-gray-500 font-mono">1142 ITBM-EMI Hub &copy; NCNU</span>
+            <span class="text-gray-800 dark:text-gray-300 font-medium tracking-tighter">
+                <span class="lang-en">Becoming a competent PM</span><span class="lang-zh hidden">成為頂尖產品經理</span>
+            </span>
+        </div>
+        <div class="flex flex-col items-end text-[10px] text-bcg-green font-bold">
+            <span class="uppercase tracking-widest"><span class="lang-en">Digital Learning</span><span class="lang-zh hidden">數位學習中心</span></span>
+            <span class="text-gray-400 font-normal"><span class="lang-en">Prof. Shihmin Lo</span><span class="lang-zh hidden">駱世民教授</span></span>
+        </div>
+    </footer>
+
+    <script>
+        let currentLang = 'en';
+        let isDarkMode = true;
+        
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const langToggle = document.getElementById('lang-toggle');
+
+        if (localStorage.theme === 'light') {
+            isDarkMode = false;
+            document.documentElement.classList.remove('dark');
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            localStorage.theme = isDarkMode ? 'dark' : 'light';
+        });
+
+        langToggle.addEventListener('click', () => {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            document.querySelectorAll('.lang-en').forEach(el => {
+                if(currentLang === 'en') el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+            document.querySelectorAll('.lang-zh').forEach(el => {
+                if(currentLang === 'zh') el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+        });
+
+        window.switchSection = function(sectionId) {
+            const sections = ['overview', 'w1-orientation'];
+            sections.forEach(id => {
+                const el = document.getElementById('section-' + id);
+                if(el) el.classList.add('hidden');
+            });
+            document.getElementById('section-' + sectionId).classList.remove('hidden');
+            
+            document.querySelectorAll('#sidebar a').forEach(el => {
+                el.classList.remove('border-bcg-green', 'bg-gray-100', 'dark:bg-white/5', 'text-bcg-green', 'dark:text-white');
+                el.classList.add('border-transparent', 'text-gray-700', 'dark:text-gray-400');
+            });
+            
+            const activeNav = document.getElementById('nav-' + sectionId);
+            if(activeNav) {
+                activeNav.classList.remove('border-transparent', 'text-gray-700', 'dark:text-gray-400');
+                activeNav.classList.add('border-bcg-green', 'bg-gray-100', 'dark:bg-white/5', 'text-bcg-green', 'dark:text-white');
+            }
+            toggleSidebar();
+            window.scrollTo(0,0);
+        }
+
+        window.switchTab = function(tabId) {
+            document.getElementById('content-pre-w1').classList.add('hidden');
+            document.getElementById('content-post-w1').classList.add('hidden');
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+
+            const preBtn = document.getElementById('tab-pre-w1');
+            const postBtn = document.getElementById('tab-post-w1');
+
+            if(tabId === 'pre-w1') {
+                preBtn.classList.add('bg-bcg-green', 'text-white', 'shadow-sm');
+                preBtn.classList.remove('text-gray-500');
+                postBtn.classList.remove('bg-bcg-green', 'text-white', 'shadow-sm');
+                postBtn.classList.add('text-gray-500');
+            } else {
+                postBtn.classList.add('bg-bcg-green', 'text-white', 'shadow-sm');
+                postBtn.classList.remove('text-gray-500');
+                preBtn.classList.remove('bg-bcg-green', 'text-white', 'shadow-sm');
+                preBtn.classList.add('text-gray-500');
+            }
+        }
+
+        function toggleSidebar() {
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            sidebar.classList.toggle('-translate-x-full', !isClosed);
+            overlay.classList.toggle('hidden', !isClosed);
+        }
+
+        function updateProgress() {
+            const techChecks = document.querySelectorAll('.tech-check');
+            const progressPercent = document.getElementById('progress-percent');
+            const progressBar = document.getElementById('mission-progress');
+            
+            const total = techChecks.length;
+            const checked = Array.from(techChecks).filter(c => c.checked).length;
+            const percentage = Math.round((checked / total) * 100);
+            
+            progressPercent.textContent = percentage + '%';
+            progressBar.style.width = percentage + '%';
+        }
+
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('tech-check')) {
+                updateProgress();
+            }
+        });
+
+        document.getElementById('menu-btn').addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+    </script>
+</body>
+</html>
